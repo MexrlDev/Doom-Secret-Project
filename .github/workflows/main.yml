@@ -1,27 +1,35 @@
-name: Generate Repo Map
+name: Build Example C0re
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:
-  map:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate repo map
+      - name: Install build tools
         run: |
-          find . -type f \
-            -not -path "./.git/*" \
-            -not -path "./node_modules/*" \
-            | sed 's|^\./|/|' \
-            | sort > repo_map.txt
+          sudo apt-get update
+          sudo apt-get install -y build-essential binutils
 
-      - name: Upload artifact
+      - name: Build
+        run: make
+
+      - name: Verify outputs
+        run: |
+          ls -lah
+          file example_C0re.elf nes_emu.bin
+          wc -c example_C0re.bin
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: repo-map
-          path: repo_map.txt
+          name: example_C0re-build
+          path: |
+            example_C0re.elf
+            example_C0re.bin
+          if-no-files-found: error
