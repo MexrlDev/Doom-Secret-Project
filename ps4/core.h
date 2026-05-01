@@ -10,7 +10,8 @@ typedef long           s64;
 typedef int            s32;
 typedef short          s16;
 typedef signed char    s8;
-typedef u32 size_t;
+
+typedef u32 size_t;          // <--- ADDED
 
 // Gadget offset and kernel handle for syscall resolution
 #define GADGET_OFFSET    0x31AA9
