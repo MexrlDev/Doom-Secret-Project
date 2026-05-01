@@ -88,7 +88,6 @@ void _start(u64 eboot_base, u64 dlsym_addr, struct ext_args *ext) {
     // -------- Resolve essential functions --------
     void *load_mod  = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelLoadStartModule");
     void *kopen     = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelOpen");
-    void *kread     = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelRead");
     void *kwrite    = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelWrite");
     void *kclose    = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelClose");
     void *kmkdir    = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelMkdir");
@@ -98,10 +97,7 @@ void _start(u64 eboot_base, u64 dlsym_addr, struct ext_args *ext) {
     void *sendto    = SYM(G, D, LIBKERNEL_HANDLE, "sendto");
     void *accept    = SYM(G, D, LIBKERNEL_HANDLE, "accept");
     void *mmap      = SYM(G, D, LIBKERNEL_HANDLE, "mmap");
-    void *munmap    = SYM(G, D, LIBKERNEL_HANDLE, "munmap");
     void *getsockname = SYM(G, D, LIBKERNEL_HANDLE, "getsockname");
-    void *poll      = SYM(G, D, LIBKERNEL_HANDLE, "poll");
-    void *sso       = SYM(G, D, LIBKERNEL_HANDLE, "setsockopt");
 
     usleep_fn = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelUsleep");
     if (!usleep_fn || !load_mod) {
@@ -165,7 +161,7 @@ void _start(u64 eboot_base, u64 dlsym_addr, struct ext_args *ext) {
         ((u32*)v.fbs[1])[i] = ((u32*)v.fbs[0])[i];
     video_flip(&v, 0);
 
-    // Wait for a WAD file via FTP
+    // Wait for a WAD file via FTP (the new, self‑contained server)
     int got_wad = ftp_wait_for_wad(ftp_srv_fd, ftp_data_fd,
                                    G, D, load_mod, mmap,
                                    kopen, kwrite, kclose, kmkdir,
