@@ -3,6 +3,9 @@
 
 #include "core.h"
 
+// Forward declaration to avoid "struct declared inside parameter list" warning
+struct ext_args;
+
 // Video context holding handles and framebuffers
 struct video_ctx {
     void *G;                // gadget pointer
