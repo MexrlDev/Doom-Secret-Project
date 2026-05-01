@@ -1,4 +1,3 @@
-#include "core.h"
 #include "doomgeneric.h"
 
 extern void *G;
@@ -9,7 +8,7 @@ extern void *aud_out_fn;
 #define SAMPLE_RATE     48000
 #define SAMPLES_PER_BUF 256
 
-static int16_t mix_buffer[SAMPLES_PER_BUF * 2]; // stereo interleaved
+static s16 mix_buffer[SAMPLES_PER_BUF * 2]; // stereo interleaved
 
 void I_InitSound(void) {
     // Audio handle already opened in main.c
@@ -17,34 +16,25 @@ void I_InitSound(void) {
 
 void I_SubmitSound(void) {
     if (audio_h < 0 || !aud_out_fn) return;
-
-    // DoomGeneric prepares sound data in the `sndOutput` array (16-bit mono, 11025 Hz).
-
-    extern void *sndOutput;   // pointer to mixed audio buffer (from Doom)
-    extern int sndSamples;    // number of samples available
-
     if (sndSamples <= 0) return;
 
-    int16_t *src = (int16_t *)sndOutput;
-    int in_len = sndSamples;
-    int out_len = SAMPLES_PER_BUF;
+    s16 *src = (s16 *)sndOutput;
+    int in_len = sndSamples;          // number of mono samples
 
-    // Linear interpolation ratio
+    // Simple nearest-neighbour resampling (no float)
+    int out_len = SAMPLES_PER_BUF;
     for (int i = 0; i < out_len; i++) {
-        float pos = (float)i * in_len / out_len;
-        int idx = (int)pos;
-        float frac = pos - idx;
-        int next = (idx + 1 < in_len) ? idx + 1 : idx;
-        int16_t val = (int16_t)(src[idx] * (1.f - frac) + src[next] * frac);
-        mix_buffer[i * 2] = val;
-        mix_buffer[i * 2 + 1] = val;
+        int src_idx = (i * in_len) / out_len;  // integer mapping
+        if (src_idx >= in_len) src_idx = in_len - 1;
+        s16 sample = src[src_idx];
+        mix_buffer[i * 2]     = sample;   // left
+        mix_buffer[i * 2 + 1] = sample;   // right
     }
 
-    // Send to hardware
+    // Push to hardware (blocking call)
     NC(G, aud_out_fn, (u64)audio_h, (u64)mix_buffer, 0, 0, 0, 0);
-    // Note: sceAudioOutOutput blocks until the buffer is consumed.
 }
 
 void I_ShutdownSound(void) {
-    // audio handle closed in cleanup
+    // Audio handle is closed later by main.c
 }
