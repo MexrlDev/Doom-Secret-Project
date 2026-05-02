@@ -21,13 +21,13 @@ int mouse_threshold    = 0;
 int snd_musicdevice    = 0;
 
 /* ---------------------------------------------------------------- */
-/*  Standard file descriptor table (already present)                 */
+/*  Standard file descriptor table                                   */
 /* ---------------------------------------------------------------- */
 static s32 fd_table[16] = { -1, -1, -1, -1, -1, -1, -1, -1,
                             -1, -1, -1, -1, -1, -1, -1, -1 };
 
 /* ---------------------------------------------------------------- */
-/*  Basic string / memory utilities (already present)                */
+/*  Basic string / memory utilities                                  */
 /* ---------------------------------------------------------------- */
 void *memset(void *s, int c, size_t n) {
     u8 *p = (u8*)s;
@@ -139,7 +139,6 @@ int fprintf(MY_FILE *stream, const char *fmt, ...) {
 }
 
 int snprintf(char *buf, size_t size, const char *fmt, ...) {
-    // just copy the format string (enough for DEH_snprintf usage)
     if (size > 0) {
         size_t len = strlen(fmt);
         if (len >= size) len = size - 1;
@@ -152,7 +151,7 @@ int snprintf(char *buf, size_t size, const char *fmt, ...) {
 /* stderr - just a dummy file-pointer */
 MY_FILE *stderr = (MY_FILE*)0;
 
-/* fortified functions (ignore the extra checks) */
+/* fortified functions */
 int __printf_chk(int flag, const char *fmt, ...) {
     log_string(fmt);
     return 0;
@@ -183,7 +182,6 @@ void *__memcpy_chk(void *dest, const void *src, size_t n, size_t os) {
 /* ---------------------------------------------------------------- */
 
 void *my_malloc(u32 size);  /* defined below */
-void my_free(void *ptr, u32 size); /* defined below */
 
 void *malloc(size_t size) {
     return my_malloc((u32)size);
@@ -197,10 +195,7 @@ void *calloc(size_t nmemb, size_t size) {
 }
 
 void free(void *ptr) {
-    // We can't know the size, but it's okay for our zone allocator
-    // The engine uses its own Z_Malloc/Z_Free, not raw free.
-    // This is a compatibility shim.
-    // Since we use mmap with fixed sizes, we ignore the free.
+    /* not used by the zone allocator; ignore */
 }
 
 /* ---------------------------------------------------------------- */
@@ -314,7 +309,6 @@ void I_PrintStr(const char *str) { log_string(str); }
 /* ---------------------------------------------------------------- */
 
 void *I_ZoneBase(int *size) {
-    // Provide a 16 MB heap (adjust if needed)
     static u8 *heap = NULL;
     static int  heap_size = 0;
     if (!heap) {
@@ -329,14 +323,13 @@ void I_BeginRead(void) { }
 void I_EndRead(void) { }
 
 int I_ConsoleStdout(void) {
-    return 1;   // pretend we have stdout
+    return 1;
 }
 
 int I_GetMemoryValue(unsigned int offset, void *address, unsigned int size) {
-    // Used by GetSectorAtNullAddress – just return 0 for safety
     return 0;
 }
 
 void I_AtExit(void (*func)(void), const char *name) {
-    // We don't support atexit
+    /* not supported */
 }
