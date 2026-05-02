@@ -166,54 +166,72 @@ void my_free(void *ptr, u32 size) {
     if (munmap && ptr) NC(G, munmap, (u64)ptr, (u64)size, 0, 0, 0, 0);
 }
 
-/* ---------- file I/O ---------- */
+/* ---------- file I/O (with proper guards, no misleading indentation) ---------- */
 MY_FILE *fopen(const char *path, const char *mode) {
-    (void)mode; void *kopen = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelOpen");
-    if (!kopen) return NULL; s32 fd = (s32)NC(G, kopen, (u64)path, 0,0,0,0,0);
+    (void)mode;
+    void *kopen = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelOpen");
+    if (!kopen) return NULL;
+    s32 fd = (s32)NC(G, kopen, (u64)path, 0,0,0,0,0);
     if (fd < 0) return NULL;
     for (int i=0; i<16; i++) {
-        if (fd_table[i] == -1) { fd_table[i] = fd; return (MY_FILE*)(u64)(i+1); }
+        if (fd_table[i] == -1) {
+            fd_table[i] = fd;
+            return (MY_FILE*)(u64)(i+1);
+        }
     }
     void *kclose = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelClose");
     if (kclose) NC(G, kclose, (u64)fd, 0,0,0,0,0);
     return NULL;
 }
+
 int fclose(MY_FILE *stream) {
-    if (!stream) return -1; int idx = (int)((u64)stream - 1);
+    if (!stream) return -1;
+    int idx = (int)((u64)stream - 1);
     if (idx<0 || idx>=16 || fd_table[idx]==-1) return -1;
     void *kclose = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelClose");
     if (kclose) NC(G, kclose, (u64)fd_table[idx], 0,0,0,0,0);
-    fd_table[idx] = -1; return 0;
+    fd_table[idx] = -1;
+    return 0;
 }
+
 size_t fread(void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
-    if (!stream) return 0; int idx = (int)((u64)stream - 1);
+    if (!stream) return 0;
+    int idx = (int)((u64)stream - 1);
     if (idx<0 || idx>=16 || fd_table[idx]==-1) return 0;
     void *kread = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelRead");
-    if (!kread) return 0; s64 total = (s64)(size * nmemb);
+    if (!kread) return 0;
+    s64 total = (s64)(size * nmemb);
     s32 n = (s32)NC(G, kread, (u64)fd_table[idx], (u64)ptr, (u64)total, 0,0,0);
     return (n>0) ? (size_t)(n / size) : 0;
 }
+
 int fseek(MY_FILE *stream, s64 offset, int whence) {
-    if (!stream) return -1; int idx = (int)((u64)stream - 1);
+    if (!stream) return -1;
+    int idx = (int)((u64)stream - 1);
     if (idx<0 || idx>=16 || fd_table[idx]==-1) return -1;
     void *klseek = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelLseek");
     if (!klseek) return -1;
     NC(G, klseek, (u64)fd_table[idx], (u64)offset, (u64)whence, 0,0,0);
     return 0;
 }
+
 long ftell(MY_FILE *stream) {
-    if (!stream) return -1; int idx = (int)((u64)stream - 1);
+    if (!stream) return -1;
+    int idx = (int)((u64)stream - 1);
     if (idx<0 || idx>=16 || fd_table[idx]==-1) return -1;
     void *klseek = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelLseek");
     if (!klseek) return -1;
     s64 pos = (s64)NC(G, klseek, (u64)fd_table[idx], 0, 1, 0,0,0);
     return (long)pos;
 }
+
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, MY_FILE *stream) {
-    if (!stream) return 0; int idx = (int)((u64)stream - 1);
+    if (!stream) return 0;
+    int idx = (int)((u64)stream - 1);
     if (idx<0 || idx>=16 || fd_table[idx]==-1) return 0;
     void *kwrite = SYM(G, D, LIBKERNEL_HANDLE, "sceKernelWrite");
-    if (!kwrite) return 0; s64 total = (s64)(size * nmemb);
+    if (!kwrite) return 0;
+    s64 total = (s64)(size * nmemb);
     s32 n = (s32)NC(G, kwrite, (u64)fd_table[idx], (u64)ptr, (u64)total, 0,0,0);
     return (n>0) ? (size_t)(n / size) : 0;
 }
@@ -261,7 +279,7 @@ void I_InitMusic(void) { }
 
 /* stats */
 void StatDump(void) { }
-void StatCopy(FILE *dest) { }
+void StatCopy(MY_FILE *dest) { }   // <-- FIXED: now MY_FILE, not FILE
 
 /* misc */
 int I_ConsoleStdout(void) { return 1; }
@@ -276,8 +294,12 @@ int mkdir(const char *pathname, unsigned int mode) { return -1; }
 void *I_ZoneBase(int *size) {
     static u8 *heap = NULL;
     static int heap_sz = 0;
-    if (!heap) { heap_sz = 16*1024*1024; heap = (u8*)my_malloc(heap_sz); }
-    *size = heap_sz; return heap;
+    if (!heap) {
+        heap_sz = 16*1024*1024;
+        heap = (u8*)my_malloc(heap_sz);
+    }
+    *size = heap_sz;
+    return heap;
 }
 void I_BeginRead(void) { }
 void I_EndRead(void) { }
