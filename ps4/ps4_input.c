@@ -6,7 +6,6 @@ extern void *D;
 extern s32 pad_h;
 extern void *pad_read_fn;
 
-// We maintain a queue of pending Doom key codes
 #define KEYBUF_SIZE 16
 static int keybuf[KEYBUF_SIZE];
 static int keybuf_head = 0, keybuf_tail = 0;
