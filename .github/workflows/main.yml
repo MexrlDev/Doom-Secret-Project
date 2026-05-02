@@ -1,4 +1,4 @@
-name: Build Example C0re
+name: Build Doom C0re
 
 on:
   workflow_dispatch:
@@ -22,14 +22,14 @@ jobs:
       - name: Verify outputs
         run: |
           ls -lah
-          file example_C0re.elf nes_emu.bin
-          wc -c example_C0re.bin
+          file Doom_C0re.elf Doom_emu.bin
+          wc -c Doom_C0re.bin
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: example_C0re-build
+          name: Doom_C0re-build
           path: |
-            example_C0re.elf
-            example_C0re.bin
+            Doom_C0re.elf
+            Doom_C0re.bin
           if-no-files-found: error
