@@ -11,9 +11,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fix Ubuntu mirrors (avoid azure timeouts)
+      - name: Fix APT mirrors (avoid azure.archive timeouts)
         run: |
-          sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list
+          # 1. Override the mirror list with a reliable global CDN
+          echo 'http://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt
+          # 2. Also fix any hardcoded azure references in sources.list
+          sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list 2>/dev/null || true
+          # 3. Now update
           sudo apt-get update
 
       - name: Install build tools
