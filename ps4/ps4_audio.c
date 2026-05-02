@@ -4,13 +4,15 @@ extern void *G;
 extern void *D;
 extern s32 audio_h;
 extern void *aud_out_fn;
-extern void *sndOutput;
-extern int  sndSamples;
 
 #define SAMPLE_RATE     48000
 #define SAMPLES_PER_BUF 256
 
-static s16 mix_buffer[SAMPLES_PER_BUF * 2]; /* stereo interleaved */
+// --- Sound globals (used by the engine) ---
+void *sndOutput = NULL;
+int   sndSamples = 0;
+
+static s16 mix_buffer[SAMPLES_PER_BUF * 2];
 
 void I_InitSound(void) { }
 
@@ -35,19 +37,20 @@ void I_SubmitSound(void) {
 
 void I_ShutdownSound(void) { }
 
-/* ---- missing audio stubs ---- */
-int I_SoundIsPlaying(int handle) { return 0; }
+/* ---- remaining sound stubs (I_* functions) ---- */
+int  I_SoundIsPlaying(int handle) { return 0; }
 void I_StopSound(int handle) { }
-int I_GetSfxLumpNum(void *sfxinfo) { return 0; }
-int I_StartSound(int handle, void *data, int vol, int sep, int pitch, int pri) { return 0; }
+int  I_GetSfxLumpNum(void *sfxinfo) { return 0; }
+int  I_StartSound(int handle, void *data, int vol, int sep, int pitch, int pri) { return 0; }
 void I_PauseSong(int handle) { }
 void I_ResumeSong(int handle) { }
 void I_UpdateSoundParams(int handle, int vol, int sep, int pitch) { }
 void I_PrecacheSounds(void) { }
 void I_ShutdownMusic(void) { }
 void I_SetMusicVolume(int volume) { }
-int I_MusicIsPlaying(void) { return 0; }
-int I_RegisterSong(void *data, int len) { return 0; }
+int  I_MusicIsPlaying(void) { return 0; }
+int  I_RegisterSong(void *data, int len) { return 0; }
 void I_PlaySong(int handle, int looping) { }
 void I_StopSong(int handle) { }
 void I_UnRegisterSong(int handle) { }
+// Note: I_UpdateSound() is already defined in ps4_system.c, so we omit it here.
