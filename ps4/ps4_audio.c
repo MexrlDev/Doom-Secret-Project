@@ -8,7 +8,6 @@ extern void *aud_out_fn;
 #define SAMPLE_RATE     48000
 #define SAMPLES_PER_BUF 256
 
-// --- Sound globals (used by the engine) ---
 void *sndOutput = NULL;
 int   sndSamples = 0;
 
@@ -37,7 +36,7 @@ void I_SubmitSound(void) {
 
 void I_ShutdownSound(void) { }
 
-/* ---- remaining sound stubs (I_* functions) ---- */
+/* ---------- remaining sound stubs ---------- */
 int  I_SoundIsPlaying(int handle) { return 0; }
 void I_StopSound(int handle) { }
 int  I_GetSfxLumpNum(void *sfxinfo) { return 0; }
@@ -45,7 +44,6 @@ int  I_StartSound(int handle, void *data, int vol, int sep, int pitch, int pri) 
 void I_PauseSong(int handle) { }
 void I_ResumeSong(int handle) { }
 void I_UpdateSoundParams(int handle, int vol, int sep, int pitch) { }
-void I_PrecacheSounds(void) { }
 void I_ShutdownMusic(void) { }
 void I_SetMusicVolume(int volume) { }
 int  I_MusicIsPlaying(void) { return 0; }
@@ -53,4 +51,3 @@ int  I_RegisterSong(void *data, int len) { return 0; }
 void I_PlaySong(int handle, int looping) { }
 void I_StopSong(int handle) { }
 void I_UnRegisterSong(int handle) { }
-// Note: I_UpdateSound() is already defined in ps4_system.c, so we omit it here.
