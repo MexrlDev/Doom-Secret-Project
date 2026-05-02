@@ -1,36 +1,36 @@
 #include "core.h"
 #include "hijack.h"
-#include "doomgeneric.h"   // from doomgeneric/ (-Idoomgeneric)
+#include "doomgeneric.h"
 
-// Externals that Doom engine sets up
-extern u8 *screen;        // 320×200 indexed framebuffer
-extern u32 *curpal;       // 256-colour ARGB palette
-
+extern u8  *screen;
+extern u32 *curpal;
 extern void *G;
 extern void *D;
 extern struct video_ctx v;
 
 static int active = 0;
 
-void I_InitGraphics(void) {
-    // Framebuffers already set up by video_hijack
+void I_InitGraphics(void) { }
+void I_ShutdownGraphics(void) { }
+void I_SetWindowTitle(const char *title) { (void)title; }
+
+/* ---- new stubs ---- */
+void *I_VideoBuffer(void) {
+    return screen;
 }
 
-void I_ShutdownGraphics(void) {
-    // nothing
+void I_SetPalette(int palette_index) {
+    /* palette updates are handled via curpal */
 }
 
-void I_SetWindowTitle(const char *title) {
-    (void)title;
+int I_GetPaletteIndex(int r, int g, int b) {
+    return 0;   /* rarely called */
 }
 
-// ------------------------------------------------------------
-//  Scale the Doom 320×200 indexed screen to 1080p
-// ------------------------------------------------------------
+/* ---------------------------------------------------------------- */
 void I_FinishUpdate(void) {
     u32 *fb = (u32 *)v.fbs[active];
 
-    // Integer scale factor that fits the screen
     int scale_x = SCR_W / 320;
     int scale_y = SCR_H / 200;
     int scale = (scale_x < scale_y) ? scale_x : scale_y;
@@ -59,7 +59,7 @@ void I_FinishUpdate(void) {
         }
     }
 
-    // Black bars
+    /* black bars */
     for (int y = 0; y < SCR_H; y++) {
         for (int x = 0; x < SCR_W; x++) {
             if (x < off_x || x >= off_x + dst_w || y < off_y || y >= off_y + dst_h)
